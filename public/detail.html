@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>iTunes Music Searcher</title>
+    <style>
+        table {
+            width: 60%;
+        }
+        table, th, td {
+            border: 1px double black;
+        }
+        th, td {
+            text-align: left;
+        }
+        img {
+            max-width: 100px;
+            max-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>iTunes Music Searcher</h1>
+    <div id="artist-name">Artist: </div>
+    <a href="index.html">Back to Search</a>
+
+    <h2>Song Details</h2>
+    <table>
+        <tbody id="songDetails">
+        </tbody>
+    </table>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const artistName = urlParams.get('artist');
+
+        const artistNameElement = document.getElementById('artist-name');
+        artistNameElement.textContent = `Artist: ${artistName}`;
+
+        const encodedArtistName = encodeURIComponent(artistName);
+
+        fetch(`https://itunes.apple.com/search?term=${encodedArtistName}`)
+            .then(response => response.json())
+            .then(data => {
+                const songDetailsContainer = document.getElementById('songDetails');
+
+                songDetailsContainer.innerHTML = '';
+
+                const matchingResults = data.results.filter(result => result.artistName === artistName);
+
+                matchingResults.forEach(result => {
+                    const row = document.createElement('tr');
+                    const albumCoverCell = document.createElement('td');
+                    const albumCoverImage = document.createElement('img');
+                    albumCoverImage.src = result.artworkUrl100;
+                    albumCoverImage.alt = 'Album Cover';
+                    albumCoverImage.width = 100;
+                    albumCoverCell.appendChild(albumCoverImage);
+
+                    const albumNameCell = document.createElement('td');
+                    albumNameCell.textContent = result.collectionName;
+
+                    const songNameCell = document.createElement('td');
+                    songNameCell.textContent = result.trackCensoredName;
+
+                    const detailsCell = document.createElement('td');
+                    const detailsLink = document.createElement('a');
+                    detailsLink.href = `trackDetail.html?trackID=${result.trackId}`; // Include trackID in the link
+                    detailsLink.textContent = 'Details';
+                    detailsCell.appendChild(detailsLink);
+
+                    row.appendChild(albumCoverCell);
+                    row.appendChild(albumNameCell);
+                    row.appendChild(songNameCell);
+                    row.appendChild(detailsCell);
+
+                    songDetailsContainer.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    </script>
+</body>
+</html>

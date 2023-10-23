@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EmberAssignment</title>
+    <style>
+        /* Define a class for the darker font */
+        .darker-font {
+            font-weight: bold;
+            color: #333; /* Adjust the color as needed */
+        }
+    </style>
+</head>
+<body>
+    <h1>iTunes Music Searcher</h1>
+    <a href="index.html">Go Back</a>
+    <div id="track-details">
+        <h2>Track Details</h2>
+        <table>
+            <tr>
+                <td id="album-cover"></td>
+            </tr>
+            <tr>
+                <td id="artist"></td>
+            </tr>
+            <tr>
+                <td id="song-name"></td>
+            </tr>
+            <tr>
+                <td id="audio-preview"></td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const trackID = urlParams.get('trackID');
+
+        fetch(`https://itunes.apple.com/lookup?id=${trackID}`)
+            .then(response => response.json())
+            .then(data => {
+                const trackDetails = document.getElementById('track-details');
+                const albumCover = document.getElementById('album-cover');
+                const artist = document.getElementById('artist');
+                const songName = document.getElementById('song-name');
+                const audioPreview = document.getElementById('audio-preview');
+
+                if (data.resultCount > 0) {
+                    const trackInfo = data.results[0];
+
+                    albumCover.innerHTML = `<img src="${trackInfo.artworkUrl100}" alt="Album Cover" width="100">`;
+                    const combinedText = `${trackInfo.artistName} - ${trackInfo.trackCensoredName}`;
+                    artist.innerHTML = `<span class="darker-font">${combinedText}</span>`;
+                    songName.style.display = 'none';
+
+                    if (trackInfo.previewUrl) {
+                        audioPreview.innerHTML = `<audio controls><source src="${trackInfo.previewUrl}" type="audio/mpeg">Your browser does not support the audio element.</audio>`;
+                    } else {
+                        audioPreview.textContent = 'No audio preview available.';
+                    }
+                } else {
+                    trackDetails.textContent = 'Track not found';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    </script>
+</body>
+</html>
